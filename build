@@ -47,6 +47,7 @@ sudo bootctl --esp-path=$(realpath mnt/esp) install
 
 echo "[9] Copying kernel + loader config..."
 sudo cp "${BOOT_SRC}/vmlinuz" mnt/esp/
+sudo cp "${BOOT_SRC}/initrd" mnt/esp/
 
 # Ensure loader structure exists
 sudo mkdir -p mnt/esp/loader/entries

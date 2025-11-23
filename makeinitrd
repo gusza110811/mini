@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+find initramfs | cpio -H newc -ov | zstd -19 -T0 > boot/initrd
