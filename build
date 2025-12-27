@@ -2,11 +2,11 @@
 set -e
 
 IMAGE="distro.img"
-SIZE="600M"        # adjust as needed
+SIZE="2G"        # adjust as needed
 ESP_SIZE="100M"
 
-BOOT_SRC="./boot"
-ROOT_SRC="./root"
+BOOT_SRC="boot"
+ROOT_SRC="root"
 
 # clean up stale loops
 sudo losetup -D
@@ -20,6 +20,8 @@ parted "$IMAGE" --script mkpart ESP fat32 1MiB "$ESP_SIZE"
 parted "$IMAGE" --script set 1 esp on
 parted "$IMAGE" --script mkpart root ext4 "$ESP_SIZE" 100%
 
+sgdisk --partition-guid=2:b5044463-ff7d-40bb-8414-80923ff91457 "$IMAGE"
+
 echo "[3] Attaching loop device..."
 LOOP=$(sudo losetup --find --partscan --show "$IMAGE")
 echo "Loop device: $LOOP"
@@ -29,7 +31,7 @@ ROOT="${LOOP}p2"
 
 echo "[4] Formatting partitions..."
 sudo mkfs.fat -F32 "$ESP"
-sudo mkfs.ext4 "$ROOT" -L "LINUX"
+yes | sudo mkfs.ext4 -L "LINUX" -U "b5044463-ff7d-40bb-8414-80923ff91457" "$ROOT"
 
 echo "[5] Mounting partitions..."
 mkdir -p mnt/esp mnt/root
@@ -37,13 +39,13 @@ sudo mount "$ESP" mnt/esp
 sudo mount "$ROOT" mnt/root
 
 echo "[6] Copying root filesystem..."
-sudo cp -a "${ROOT_SRC}/." mnt/root/
+sudo cp -r "${ROOT_SRC}"/* mnt/root
 
 echo "[7] Setting root FS label..."
 sudo e2label "$ROOT" LINUX
 
 echo "[8] Installing systemd-boot into ESP..."
-sudo bootctl --esp-path=$(realpath mnt/esp) install
+sudo bootctl --esp-path=$(realpath mnt/esp) install --no-variables
 
 echo "[9] Copying kernel + loader config..."
 sudo cp "${BOOT_SRC}/vmlinuz" mnt/esp/
