@@ -5,12 +5,26 @@ mount -t proc  proc  /proc
 mount -t sysfs sys   /sys
 mount -t devtmpfs dev /dev
 
+mkdir -p /run
+mount -t tmpfs tmpfs /run
+
 echo "Welcome to MINI"
 
-setsid bash -c '
-    exec /bin/bash </dev/tty1 >/dev/tty1 2>&1
-' &
-disown
-setsid bash -c '
-    exec /bin/bash </dev/ttyS0 >/dev/ttyS0 2>&1
-'
+start_tty() {
+    local tty="$1"
+
+    while true; do
+        echo "Starting shell on $tty"
+        setsid /usr/bin/bash <"$tty" >"$tty" 2>&1
+        echo "Login on $tty exited, restarting..."
+        sleep 1
+    done
+}
+
+start_tty /dev/tty1 &
+start_tty /dev/ttyS0 &
+
+# PID 1 must never exit
+while true; do
+    wait
+done

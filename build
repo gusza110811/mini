@@ -2,7 +2,7 @@
 set -e
 
 IMAGE="distro.img"
-SIZE="2G"        # adjust as needed
+SIZE="4G"
 ESP_SIZE="100M"
 
 BOOT_SRC="boot"
