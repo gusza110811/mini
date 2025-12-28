@@ -1,6 +1,2 @@
 #!/usr/bin/env bash
-sudo mount --bind /dev  root/dev
-sudo mount --bind /proc root/proc
-sudo mount --bind /sys  root/sys
-
 sudo chroot root /usr/bin/bash
